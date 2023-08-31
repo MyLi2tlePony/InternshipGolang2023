@@ -1,0 +1,83 @@
+definitions:
+  domain.ChangeUserSegments:
+    properties:
+      deleteSegments:
+        items:
+          $ref: '#/definitions/domain.Segment'
+        type: array
+      insertSegments:
+        items:
+          $ref: '#/definitions/domain.Segment'
+        type: array
+    type: object
+  domain.Segment:
+    properties:
+      name:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /api/segment:
+    delete:
+      parameters:
+      - description: Segment
+        in: body
+        name: segment
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Segment'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+    post:
+      parameters:
+      - description: Segment
+        in: body
+        name: segment
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Segment'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+  /api/user/{id}/segment:
+    get:
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Segment'
+            type: array
+        "400":
+          description: Bad Request
+    patch:
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Changed User Segments
+        in: body
+        name: ChangeUserSegments
+        required: true
+        schema:
+          $ref: '#/definitions/domain.ChangeUserSegments'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+swagger: "2.0"
