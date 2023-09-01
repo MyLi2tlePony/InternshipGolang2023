@@ -45,11 +45,17 @@ func (h *UserHandler) ChangeSegments(ctx echo.Context) error {
 
 	var insertSegments, deleteSegments []entity.Segment
 	for _, segment := range body.DeleteSegments {
-		deleteSegments = append(deleteSegments, entity.Segment{Name: segment.Name})
+		deleteSegments = append(deleteSegments, entity.Segment{
+			Name:      segment.Name,
+			DeletedAt: segment.DeletedAt,
+		})
 	}
 
 	for _, segment := range body.InsertSegments {
-		insertSegments = append(insertSegments, entity.Segment{Name: segment.Name})
+		insertSegments = append(insertSegments, entity.Segment{
+			Name:      segment.Name,
+			DeletedAt: segment.DeletedAt,
+		})
 	}
 
 	err = h.service.ChangeSegments(id, insertSegments, deleteSegments)
@@ -81,7 +87,10 @@ func (h *UserHandler) GetSegments(ctx echo.Context) error {
 
 	domainSegments := make([]domain.Segment, 0, len(segments))
 	for _, segment := range segments {
-		domainSegments = append(domainSegments, domain.Segment{Name: segment.Name})
+		domainSegments = append(domainSegments, domain.Segment{
+			Name:      segment.Name,
+			DeletedAt: segment.DeletedAt,
+		})
 	}
 
 	return ctx.JSON(http.StatusOK, domainSegments)

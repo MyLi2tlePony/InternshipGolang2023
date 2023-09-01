@@ -10,6 +10,18 @@ definitions:
           $ref: '#/definitions/domain.Segment'
         type: array
     type: object
+  domain.CreateLinkCSVRequest:
+    properties:
+      month:
+        type: integer
+      year:
+        type: integer
+    type: object
+  domain.CreateLinkCSVResponse:
+    properties:
+      fileName:
+        type: integer
+    type: object
   domain.Segment:
     properties:
       name:
@@ -40,6 +52,35 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/domain.Segment'
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+  /api/segment/csv/:
+    post:
+      parameters:
+      - description: period
+        in: body
+        name: segment
+        required: true
+        schema:
+          $ref: '#/definitions/domain.CreateLinkCSVRequest'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.CreateLinkCSVResponse'
+        "400":
+          description: Bad Request
+  /api/segment/csv/{name}:
+    get:
+      parameters:
+      - description: file name
+        in: path
+        name: name
+        required: true
+        type: string
       responses:
         "200":
           description: OK

@@ -21,7 +21,7 @@ func NewUserRepository(ctx context.Context, db Database) *UserRepository {
 	}
 }
 
-func (r *UserRepository) ChangeSegments(userID int, insert, delete []string) error {
+func (r *UserRepository) ChangeSegments(userID int, insertEntities, deleteEntities []entity.Segment) error {
 	sql := `INSERT INTO users (user_id) VALUES ($1) ON CONFLICT DO NOTHING RETURNING id;`
 
 	var id int
@@ -39,41 +39,39 @@ func (r *UserRepository) ChangeSegments(userID int, insert, delete []string) err
 		}
 	}
 
+	for _, insert := range insertEntities {
+		sql = `SELECT id FROM segments WHERE name = $1;`
+
+		var insertID int
+		if err := r.db.QueryRow(r.ctx, sql, insert.Name).Scan(&insertID); err != nil {
+			return err
+		}
+
+		if insertID == 0 {
+			continue
+		}
+
+		sql = `INSERT INTO segments_users (user_id, segment_id, deleted_at) VALUES ($1, $2, $3);`
+
+		_, err = r.db.Exec(r.ctx, sql, id, insertID, insert.DeletedAt)
+		if err != nil {
+			return err
+		}
+	}
+
+	deleted := make([]string, 0, len(deleteEntities))
+	for i := range deleteEntities {
+		deleted = append(deleted, deleteEntities[i].Name)
+	}
+
 	params := &pgtype.TextArray{}
-	if err = params.Set(insert); err != nil {
+	if err = params.Set(deleted); err != nil {
 		return err
 	}
 
 	sql = `SELECT id FROM segments WHERE name = ANY ($1);`
 
 	query, err := r.db.Query(r.ctx, sql, params)
-	if err != nil {
-		return err
-	}
-
-	for query.Next() {
-		var insertID int
-
-		if err = query.Scan(&insertID); err != nil {
-			return err
-		}
-
-		sql = `INSERT INTO segments_users (user_id, segment_id) VALUES ($1, $2);`
-
-		_, err = r.db.Exec(r.ctx, sql, id, insertID)
-		if err != nil {
-			return err
-		}
-	}
-
-	params = &pgtype.TextArray{}
-	if err = params.Set(delete); err != nil {
-		return err
-	}
-
-	sql = `SELECT id FROM segments WHERE name = ANY ($1);`
-
-	query, err = r.db.Query(r.ctx, sql, params)
 	if err != nil {
 		return err
 	}
@@ -120,4 +118,15 @@ func (r *UserRepository) GetSegments(userID int) ([]entity.Segment, error) {
 	}
 
 	return segments, nil
+}
+
+func (r *UserRepository) DeleteOldSegments() error {
+	sql := `DELETE FROM segments_users WHERE deleted_at < now()`
+
+	_, err := r.db.Exec(r.ctx, sql)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

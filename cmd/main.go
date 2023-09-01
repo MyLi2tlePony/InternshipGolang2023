@@ -8,6 +8,7 @@ import (
 	"os/signal"
 	"path"
 	"syscall"
+	"time"
 
 	"github.com/MyLi2tlePony/AvitoInternshipGolang2023/api"
 	"github.com/MyLi2tlePony/AvitoInternshipGolang2023/internal/config"
@@ -63,6 +64,16 @@ func main() {
 
 	api.SetupSegmentRoutes(srv, segmentHandler)
 	api.SetupUserRoutes(srv, userHandler)
+
+	go func() {
+		for {
+			if err := userRepo.DeleteOldSegments(); err != nil {
+				fmt.Println(err)
+			}
+
+			time.Sleep(60 * time.Second)
+		}
+	}()
 
 	ctx, cancel := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)

@@ -3,7 +3,7 @@ package service
 import "github.com/MyLi2tlePony/AvitoInternshipGolang2023/internal/entity"
 
 type UserRepository interface {
-	ChangeSegments(userID int, insert, delete []string) error
+	ChangeSegments(userID int, insertEntities, deleteEntities []entity.Segment) error
 	GetSegments(userID int) ([]entity.Segment, error)
 }
 
@@ -18,18 +18,7 @@ func NewUserService(repository UserRepository) *UserService {
 }
 
 func (s *UserService) ChangeSegments(userID int, insertEntities, deleteEntities []entity.Segment) error {
-	insertSegments := make([]string, 0, len(insertEntities))
-	deleteSegments := make([]string, 0, len(deleteEntities))
-
-	for i := range insertEntities {
-		insertSegments = append(insertSegments, insertEntities[i].Name)
-	}
-
-	for i := range deleteEntities {
-		deleteSegments = append(deleteSegments, deleteEntities[i].Name)
-	}
-
-	err := s.repository.ChangeSegments(userID, insertSegments, deleteSegments)
+	err := s.repository.ChangeSegments(userID, insertEntities, deleteEntities)
 	if err != nil {
 		return err
 	}

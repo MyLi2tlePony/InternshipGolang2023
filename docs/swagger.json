@@ -48,6 +48,53 @@
                 }
             }
         },
+        "/api/segment/csv/": {
+            "post": {
+                "parameters": [
+                    {
+                        "description": "period",
+                        "name": "segment",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.CreateLinkCSVRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/domain.CreateLinkCSVResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
+        },
+        "/api/segment/csv/{name}": {
+            "get": {
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "file name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            }
+        },
         "/api/user/{id}/segment": {
             "get": {
                 "parameters": [
@@ -119,6 +166,25 @@
                     "items": {
                         "$ref": "#/definitions/domain.Segment"
                     }
+                }
+            }
+        },
+        "domain.CreateLinkCSVRequest": {
+            "type": "object",
+            "properties": {
+                "month": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "integer"
+                }
+            }
+        },
+        "domain.CreateLinkCSVResponse": {
+            "type": "object",
+            "properties": {
+                "fileName": {
+                    "type": "integer"
                 }
             }
         },

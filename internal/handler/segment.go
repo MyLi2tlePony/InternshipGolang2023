@@ -1,16 +1,18 @@
 package handler
 
 import (
-	"net/http"
-
+	"fmt"
 	"github.com/MyLi2tlePony/AvitoInternshipGolang2023/internal/domain"
 	"github.com/MyLi2tlePony/AvitoInternshipGolang2023/internal/entity"
 	"github.com/labstack/echo/v4"
+	"net/http"
+	"os"
 )
 
 type SegmentService interface {
 	Create(segment *entity.Segment) error
 	Delete(segment *entity.Segment) error
+	CreateCSV(year, month int) (string, error)
 }
 
 type SegmentHandler struct {
@@ -71,4 +73,44 @@ func (h *SegmentHandler) Delete(ctx echo.Context) error {
 	}
 
 	return ctx.NoContent(http.StatusOK)
+}
+
+// CreateLinkCSV
+// @Param segment body domain.CreateLinkCSVRequest true "period"
+// @Success 200 {object} domain.CreateLinkCSVResponse
+// @Failure 400
+// @Router /api/segment/csv/ [post]
+func (h *SegmentHandler) CreateLinkCSV(ctx echo.Context) error {
+	var body domain.CreateLinkCSVRequest
+	if err := ctx.Bind(&body); err != nil {
+		ctx.Logger().Error(err)
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	fileName, err := h.service.CreateCSV(body.Year, body.Month)
+	if err != nil {
+		ctx.Logger().Error(err)
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	hostPort := ctx.Echo().ListenerAddr()
+	return ctx.JSON(http.StatusOK, fmt.Sprintf("%s%s/%s", hostPort, ctx.Path(), fileName))
+}
+
+// GetCSV
+// @Param name path string true "file name"
+// @Success 200
+// @Failure 400
+// @Router /api/segment/csv/{name} [get]
+func (h *SegmentHandler) GetCSV(ctx echo.Context) error {
+	file := fmt.Sprintf("csv/%s", ctx.Param("name"))
+
+	if _, err := os.Stat(file); err != nil {
+		ctx.Logger().Error(err)
+		return ctx.NoContent(http.StatusBadRequest)
+	}
+
+	ctx.Response().Header().Set("content-disposition", "attachment; filename=\""+file+"\"")
+
+	return ctx.File(file)
 }
